@@ -1,176 +1,182 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import * as z from "zod/v4";  // Zod 4: namespace import required
-import { ApiClient } from "./api-client";
 import type { Env } from "./types";
-import { ResponseFormat } from "./types";
 import type { Props } from "./props";
 import { checkBalance, consumeTokensWithRetry } from "./tokenConsumption";
-import { formatInsufficientTokensError } from "./tokenUtils";
-import { sanitizeOutput, redactPII, validateOutput } from 'pilpat-mcp-security';
+import { formatInsufficientTokensError, formatAccountDeletedError } from "./tokenUtils";
+import { sanitizeOutput, redactPII } from 'pilpat-mcp-security';
+import { loadHtml } from "./helpers/assets.js";
+import { UI_RESOURCES, UI_MIME_TYPE } from "./resources/ui-resources.js";
 
 /**
- * TODO: Rename this class to match your server name (e.g., WeatherMCP, NewsMCP, etc.)
+ * Quiz MCP - General Knowledge Quiz Widget
  *
- * Skeleton MCP Server with Token Integration
- *
- * This server demonstrates the complete token-based authentication pattern
- * with three example tools showing different token costs (1, 2, 3 tokens).
+ * Pure MCP App providing interactive general knowledge quiz with 8 questions.
+ * No external API integration - all data is hardcoded in the widget.
  *
  * Generic type parameters:
- * - Env: Cloudflare Workers environment bindings (KV, D1, WorkOS credentials, etc.)
- * - unknown: No state management (stateless server) - change if you need state
+ * - Env: Cloudflare Workers environment bindings (KV, D1, ASSETS)
+ * - unknown: No state management (stateless server)
  * - Props: Authenticated user context from WorkOS (user, tokens, permissions, userId)
- *
- * Authentication flow:
- * 1. User connects via MCP client
- * 2. Redirected to WorkOS AuthKit (Magic Auth)
- * 3. User enters email → receives 6-digit code
- * 4. OAuth callback checks if user exists in token database
- * 5. If not in database → 403 error page
- * 6. If in database → Access granted, user info available via this.props
- * 7. All tools check token balance before execution
  */
 export class Quiz extends McpAgent<Env, unknown, Props> {
-    server = new McpServer({
-        name: "Skeleton MCP Server", // TODO: Update server name
-        version: "1.0.0",
-    });
+    server = new McpServer(
+        {
+            name: "General Knowledge Quiz",
+            version: "1.0.0",
+        },
+        {
+            capabilities: {
+                tools: {},
+                resources: { listChanged: true }  // SEP-1865: Enable resource discovery
+            }
+        }
+    );
 
-    // NO initialState - this is a stateless server
-    // TODO: If you need state, add:
-    // initialState = { yourStateHere: "value" };
-    // Then change generic from 'unknown' to your State type
+    // Stateless server - no persistent state needed
 
     async init() {
         // ========================================================================
-        // API CLIENT INITIALIZATION
+        // SEP-1865 MCP Apps: UI Resource Registration
         // ========================================================================
-        // TODO: Initialize your custom API client here when implementing tools
-        // Example: const apiClient = new YourApiClient(this.env.YOUR_API_KEY);
-        // DO NOT uncomment until you have implemented your custom API client class
+        const quizResource = UI_RESOURCES.quiz;
+
+        this.server.registerResource(
+            quizResource.name,
+            quizResource.uri,
+            {
+                description: quizResource.description,
+                mimeType: quizResource.mimeType
+            },
+            async () => {
+                // Load built widget from Assets binding
+                const templateHTML = await loadHtml(this.env.ASSETS, "/quiz.html");
+
+                return {
+                    contents: [{
+                        uri: quizResource.uri,
+                        mimeType: UI_MIME_TYPE,
+                        text: templateHTML,
+                        _meta: quizResource._meta as Record<string, unknown>
+                    }]
+                };
+            }
+        );
+
+        console.log(`[Quiz] UI resource registered: ${quizResource.uri}`);
 
         // ========================================================================
-        // TOOL REGISTRATION SECTION
+        // Tool: start_quiz (5 tokens)
         // ========================================================================
-        // Tools will be generated here by the automated boilerplate generator
-        // Usage: npm run generate-tool --prp PRPs/your-prp.md --tool-id your_tool --output snippets
-        //
-        // Or implement tools manually following the 7-Step Token Pattern:
-        // Step 0: Generate actionId for idempotency
-        // Step 1: Get userId from this.props
-        // Step 2: Check token balance with checkBalance()
-        // Step 3: Handle insufficient balance
-        // Step 4: Execute business logic
-        // Step 4.5: Apply security (sanitizeOutput + redactPII)
-        // Step 5: Consume tokens with consumeTokensWithRetry()
-        // Step 6: Return result
-        //
-        // Tool Design Best Practices:
-        // ✅ Consolidation: Combine multi-step operations into goal-oriented tools
-        // ✅ ResponseFormat: Add format parameter for large datasets (concise/detailed)
-        // ✅ Context Optimization: Return semantic data (names) not technical (IDs)
-        // ✅ Token Efficiency: Implement pagination, filtering, smart defaults
-        //
-        // Tool Description Pattern (CRITICAL - LLMs use this for tool selection):
-        // Use the 2-part structure: Purpose → Details
-        //
-        // Use registerTool() API (SDK 1.20+)
-        //
-        // this.server.registerTool(
-        //     "get_currency_rate",  // snake_case tool ID
-        //     {
-        //         title: "Get Currency Rate",  // NEW: Display name for UI
-        //         description:
-        //             "Get current or historical buy/sell exchange rates from the Polish National Bank (NBP). " +
-        //             "Returns bid (bank buy) and ask (bank sell) prices in PLN from NBP Table C. " +
-        //             "Use this when you need to know exchange rates at Polish banks. " +
-        //             "Note: NBP only publishes rates on trading days (Mon-Fri, excluding holidays).",
-        //         inputSchema: {
-        //             // Zod 4: Use .meta({ description }) instead of .describe()
-        //             currencyCode: z.enum(["USD", "EUR", "GBP"]).meta({
-        //                 description: "Three-letter ISO 4217 currency code (uppercase). " +
-        //                     "Supported: USD, EUR, GBP. Example: 'USD'"
-        //             }),
-        //             date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().meta({
-        //                 description: "Date in YYYY-MM-DD format (e.g., '2025-10-01'). " +
-        //                     "If omitted, returns the most recent rate. " +
-        //                     "Must be a trading day (not weekend/holiday)."
-        //             })
-        //         },
-        //         outputSchema: z.object({  // NEW: Output validation
-        //             bid: z.number(),
-        //             ask: z.number(),
-        //             date: z.string()
-        //         })
-        //     },
-        //     async ({ currencyCode, date }) => {
-        //         // Steps 0-4: actionId generation, userId lookup, balance check, execution
-        //         const result = { bid: 3.95, ask: 4.05, date: "2025-01-21" };
-        //
-        //         // Step 4.5: Security processing (sanitize + redact PII)
-        //         const sanitized = sanitizeOutput(JSON.stringify(result), {
-        //             removeHtml: true,
-        //             removeControlChars: true
-        //         });
-        //         const { redacted } = redactPII(sanitized, {
-        //             redactPhones: true,
-        //             redactCreditCards: true
-        //         });
-        //
-        //         // Step 5: Consume tokens
-        //         // await consumeTokensWithRetry(...);
-        //
-        //         // Step 6: Return result with BOTH content and structuredContent
-        //         return {
-        //             content: [{ type: 'text', text: redacted }],
-        //             structuredContent: result  // Direct access for LLMs
-        //         };
-        //     }
-        // );
-        //
-        // Key improvements in registerTool() API:
-        // - title field for UI display (separate from name identifier)
-        // - outputSchema for runtime validation
-        // - Returns tool handle for dynamic enable/disable
-        //
-        // Reference: See development_guide.md Section 0 for comprehensive patterns
-        //
-        // ========================================================================
-        // MCP APPS (SEP-1865) - OPTIONAL Interactive UI
-        // ========================================================================
-        // MCP Apps enable tools to return rich, interactive UI components
-        // Reference: mcp-apps/MCP_APPS_BEST_PRACTICES.md
-        //
-        // MCP Apps Pattern (Two-Part Registration):
-        // 1. Register UI Resource (HTML widget served via Cloudflare Assets)
-        // 2. Register Tool with _meta["ui/resourceUri"] linking to the widget
-        //
-        // Key concepts:
-        // - Widget HTML is built with Vite + viteSingleFile and served via Assets binding
-        // - Tool returns structuredContent (for UI) + content (text fallback for non-UI hosts)
-        // - Widget uses @modelcontextprotocol/ext-apps SDK for host communication
-        //
-        // WHEN TO USE MCP APPS:
-        // ✅ Display data that benefits from visualization (tables, charts, dashboards)
-        // ✅ Require forms or interactive configuration interfaces
-        // ✅ Embed external services (Grafana, Tableau, Looker)
-        // ✅ Involve multi-step workflows with user interaction
-        // ✅ Handle real-time data updates
-        //
-        // ❌ Skip UI if: Simple text APIs, credentials only, pure data transformation
-        //
-        // Implementation requires:
-        // 1. Add "assets" binding to wrangler.jsonc pointing to built widgets
-        // 2. Create widget HTML/React components in web/widgets/
-        // 3. Register UI resource with server.registerResource()
-        // 4. Link tool to UI via _meta: { "ui/resourceUri": "ui://widget/name.html" }
-        //
-        // Learn more:
-        // - mcp-apps/MCP_APPS_BEST_PRACTICES.md (comprehensive patterns)
-        // - mcp-apps/sep.md (SEP-1865 specification)
-        // - mcp-apps/ext_apps.md (SDK documentation)
-        //
-        // TODO: Add your tools here (manually or via generator)
+        this.server.registerTool(
+            "start_quiz",
+            {
+                title: "Start General Knowledge Quiz",
+                description: "Starts the interactive general knowledge quiz widget with 8 questions across various topics. Returns an embedded UI where users answer questions and see their final score. The widget manages state internally and automatically sends a completion message to the host when finished. Use this when the user wants to test their knowledge with a quick, interactive quiz.",
+                inputSchema: {},
+                outputSchema: z.object({
+                    message: z.string().meta({ description: "User-facing confirmation message" }),
+                    widget_uri: z.string().meta({ description: "UI resource URI for widget rendering" })
+                }),
+                _meta: {
+                    "ui/resourceUri": UI_RESOURCES.quiz.uri
+                }
+            },
+            async ({}) => {
+                const TOOL_NAME = 'start_quiz';
+                const REQUIRED_TOKENS = 5;
+
+                // Step 0: Pre-generate idempotent actionId
+                const actionId = crypto.randomUUID();
+
+                // Step 1 & 2: Validate user authentication (handled by McpAgent)
+                if (!this.props) {
+                    throw new Error('User not authenticated');
+                }
+                const userId = this.props.userId;
+                const userEmail = this.props.email;
+
+                // Step 3: Check token balance
+                const balanceCheck = await checkBalance(
+                    this.env.TOKEN_DB,
+                    userId,
+                    REQUIRED_TOKENS
+                );
+
+                if (balanceCheck.userDeleted) {
+                    throw new Error(formatAccountDeletedError(userEmail));
+                }
+
+                if (!balanceCheck.sufficient) {
+                    throw new Error(
+                        formatInsufficientTokensError(
+                            TOOL_NAME,
+                            balanceCheck.currentBalance,
+                            REQUIRED_TOKENS
+                        )
+                    );
+                }
+
+                // Step 4: Execute business logic (no external API call)
+                const result = {
+                    message: "Quiz started! Complete all 8 questions to see your score.",
+                    widget_uri: UI_RESOURCES.quiz.uri
+                };
+
+                let success = true;
+
+                // Step 4.5: Security processing (minimal for widget-only)
+                const sanitized = sanitizeOutput(JSON.stringify(result), {
+                    maxLength: 500,
+                    removeHtml: true,
+                    removeControlChars: true,
+                    normalizeWhitespace: true
+                });
+
+                const { redacted, detectedPII } = redactPII(sanitized, {
+                    redactEmails: false,
+                    redactPhones: false,
+                    redactCreditCards: false,
+                    redactSSN: false,
+                    redactBankAccounts: false,
+                    redactPESEL: false,
+                    redactPolishIdCard: false,
+                    redactPolishPassport: false,
+                    redactPolishPhones: false,
+                    placeholder: '[REDACTED]'
+                });
+
+                if (detectedPII.length > 0) {
+                    console.warn(`[Security] Quiz tool: Redacted PII types:`, detectedPII);
+                }
+
+                const finalResult = JSON.parse(redacted);
+
+                // Step 5: Consume tokens with retry logic (idempotent)
+                await consumeTokensWithRetry(
+                    this.env.TOKEN_DB,
+                    userId,
+                    REQUIRED_TOKENS,
+                    'quiz',
+                    TOOL_NAME,
+                    {},  // No parameters
+                    finalResult,
+                    success,
+                    actionId
+                );
+
+                // Step 6: Return with structuredContent (SDK 1.20+)
+                return {
+                    content: [{
+                        type: 'text',
+                        text: finalResult.message
+                    }],
+                    structuredContent: finalResult
+                };
+            }
+        );
+
+        console.log('[Quiz] Tool registered: start_quiz (5 tokens)');
     }
 }

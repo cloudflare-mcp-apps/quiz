@@ -51,6 +51,14 @@ export interface Env {
     AI_GATEWAY_ID: string;
     AI_GATEWAY_TOKEN: string;
 
+    /**
+     * Cloudflare Assets Binding for MCP Apps
+     *
+     * Used to serve built HTML widgets from web/dist/widgets directory.
+     * Required for SEP-1865 MCP Apps protocol support.
+     */
+    ASSETS: Fetcher;
+
     // TODO: Add your custom environment variables and bindings here
     // Examples:
     // AI?: Ai;                              // Workers AI for LLM inference
