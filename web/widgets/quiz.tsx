@@ -98,21 +98,22 @@ function QuizWidget() {
     });
   };
 
-  // TODO: Background image disabled temporarily due to MCPJam CSP restrictions
-  // data: URIs may not be supported in resourceDomains array
-  // const backgroundImageSrc = 'data:image/webp;base64,...';
+  // Background image served via Worker endpoint (CSP-compliant)
+  const backgroundImageSrc = 'https://quiz.wtyczki.ai/quiz-background.webp';
 
   if (state === 'IDLE') {
     return (
-      <div className="h-[600px] flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-slate-900 dark:to-slate-800 overflow-hidden relative">
-        {/* Decorative pattern overlay */}
-        <div className="absolute inset-0 opacity-10 dark:opacity-5"
-          style={{
-            backgroundImage: `radial-gradient(circle at 25px 25px, currentColor 2%, transparent 0%),
-                             radial-gradient(circle at 75px 75px, currentColor 2%, transparent 0%)`,
-            backgroundSize: '100px 100px'
-          }}
+      <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
+        {/* Background Photo */}
+        <img
+          src={backgroundImageSrc}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-30 dark:opacity-20"
+          aria-hidden="true"
         />
+
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white/50 dark:from-slate-900/70 dark:to-slate-900/50" />
 
         {/* Content (z-index to appear above background) */}
         <div className="relative z-10 flex flex-col items-center">
@@ -136,15 +137,17 @@ function QuizWidget() {
 
   if (state === 'FINISHED') {
     return (
-      <div className="h-[600px] flex flex-col items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 dark:from-slate-900 dark:to-slate-800 overflow-hidden relative">
-        {/* Decorative pattern overlay */}
-        <div className="absolute inset-0 opacity-10 dark:opacity-5"
-          style={{
-            backgroundImage: `radial-gradient(circle at 25px 25px, currentColor 2%, transparent 0%),
-                             radial-gradient(circle at 75px 75px, currentColor 2%, transparent 0%)`,
-            backgroundSize: '100px 100px'
-          }}
+      <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
+        {/* Background Photo */}
+        <img
+          src={backgroundImageSrc}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover opacity-30 dark:opacity-20"
+          aria-hidden="true"
         />
+
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white/50 dark:from-slate-900/70 dark:to-slate-900/50" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center">
@@ -175,15 +178,17 @@ function QuizWidget() {
   }
 
   return (
-    <div className="h-[600px] flex flex-col bg-gradient-to-br from-slate-50 to-gray-100 dark:from-slate-900 dark:to-slate-800 overflow-hidden relative">
-      {/* Decorative pattern overlay */}
-      <div className="absolute inset-0 opacity-5 dark:opacity-3"
-        style={{
-          backgroundImage: `radial-gradient(circle at 25px 25px, currentColor 2%, transparent 0%),
-                           radial-gradient(circle at 75px 75px, currentColor 2%, transparent 0%)`,
-          backgroundSize: '100px 100px'
-        }}
+    <div className="h-[600px] flex flex-col bg-white dark:bg-slate-900 overflow-hidden relative">
+      {/* Background Photo */}
+      <img
+        src={backgroundImageSrc}
+        alt=""
+        className="absolute inset-0 w-full h-full object-cover opacity-20 dark:opacity-15"
+        aria-hidden="true"
       />
+
+      {/* Gradient overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-white/60 dark:from-slate-900/80 dark:to-slate-900/60" />
 
       <div className="relative z-10 flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="text-sm font-medium text-gray-600 dark:text-gray-300">

@@ -34,7 +34,7 @@ export const UI_RESOURCES = {
       ui: {
         csp: {
           connectDomains: [],      // No external API calls
-          resourceDomains: [],     // All assets bundled (using CSS gradients, no external images)
+          resourceDomains: ["https://quiz.wtyczki.ai"],  // Background image served from same domain
         },
         prefersBorder: true,
         icon: "📝",                // Visual identity for quiz
