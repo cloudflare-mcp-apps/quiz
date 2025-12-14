@@ -98,38 +98,27 @@ function QuizWidget() {
     });
   };
 
+  // Background image as base64 data URI (photo_background.webp - 7.9KB)
+  const backgroundImage = 'data:image/webp;base64,UklGRrgfAABXRUJQVlA4IKwfAACwpAGdASqwBCADPt1usFO3PT4sIhcI28AbiWlu8B6uTU4bvv1nOGpxG9dCvaz+R30svJbqd0NL/sfoMfID0AvwB/v/9k9AD0gvTQ+VvxC+mXwD/r/8P+RfWN/j/WV/rf8H8u7/r9lf+j9gD+V/wD+z/6v1z/4v2APyJ/Mv6X/s/gI+wD0Jf2v/C+u79Wf0L/gv+b9pH8s/vv9C/YA/kH9y///uO/AD+O/2j/uf+J+AD7O/4T/vf/V9ev+qf6vyBfYD/0P9Y/7X3Sf0V3IfYh+LX3i/3j/0/4d+x/8G/RP8B/fP8A/g39A/1H+d/xP96/wvQA/Jf8L/jv+V9//8Y/mn+2/xX+Vf83r4f/t//P1Xv2L/Nf8t+Rf/tP+l/xfYA/LX95/3P/c/sT0A/uh/pv9S/6n/NdcD9B/9h/1//U+6Dlh/TT+b/8J+8n7f/gf+0/n/rA9s7+if7f/2v70/D79E/5r/qf+k9IrtP/Of///9fVV/Tv///r+mr/Yv+S/8D/yfwF/nX+L/8n+X/A/+g/4//1f//9Cj6Af4t/hP/s/zPmyf6r+w/9z/5/pO/x/+gf4f/+f/9//v63/vv+s///kH/sX+9/6v/+88L/Y/87/zP+////0G/Lf6P/2v+t8g/5K/lv+V//////0AvcH/Ov+8///t/////4vUqPY1/mfcr/G/mH7l/2X8d///v/+mj/pf+h///Cf///zD/Vv93/rv87+Gfyf/HP+X/4v/Lf3r/C///1P/B/2r/a/+H///Z5//v/J///kC/OX89/1f9l/lv+s/8f/5//T/Bf3d/hf+r/+vsp/iP8d/7X/m+Cv7J/nv/T/8r/1fh//Tv/l/l/+s+gB+UP5n/ov/E/1X41/3f/s/+Z/Qve7+8H5C/oH/L/+T/T+/L+8f+c/8X/3fXB/CX9w/8n/r/+18BPzV/ff+u/9n+Ael//If/l/8n////Wq+BHzYfo/A4AAAABFNxWS9cH/G8pSdjDGAF8L6O2lNp5YdP/2IQo7//+lChwfNtBd+F//TjdcqQv0Rkv/6cbrlSF+iMl//Tjdcpzw7vbQXfhf/042dz7lv/8J/+nG65Uhfhr/Tvfo5JLgBAYw9NZRF/Y//8Yjm+9Nqhpx/p3v0ckFYgwfM4N/////gocP/42JNlW2vPTaK/+nG65Uhfoi9//0m7lX//+nG65Uhfoir//pxuuVIX6IyPgAnPF7/7/6AhTdeARfojJf/042dz7lv/8J/+nG65Uhfhr/T9ONBWNV//+nG65Uhfoz//pxuuVIX6bUf/6cbrlSF+iMl//Tjdcqbf3n/YQm8J/+hfojJ//042dz7lv/8J/+nG65UhfhvZVtrz02iv/pxuuVIX6Iv//bXl+8/wM/4//pxuuVIX6IyX/9ON1ypC/VWw//6cbrlSF+m1Lv/ojlSF+iMl//Tjdcqbf3nZ/68//Tc/4//pxuuVIX4a/0/TjQVjVf//pxuuVIX6M//6cbrlSF+mz3/9NqsN2v4L6IyX/9ON1ypu/ef9hCbwn/6D+p+nGzuA==';
+
   if (state === 'IDLE') {
     return (
       <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
-        {/* Inline SVG Background Pattern */}
-        <svg
-          className="absolute inset-0 w-full h-full opacity-[0.15] dark:opacity-[0.08]"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <defs>
-            <pattern
-              id="quiz-pattern"
-              x="0"
-              y="0"
-              width="100"
-              height="100"
-              patternUnits="userSpaceOnUse"
-            >
-              <circle cx="25" cy="25" r="2" fill="currentColor" />
-              <circle cx="75" cy="25" r="2" fill="currentColor" />
-              <circle cx="25" cy="75" r="2" fill="currentColor" />
-              <circle cx="75" cy="75" r="2" fill="currentColor" />
-              <path
-                d="M50 20 L55 35 L70 35 L58 45 L63 60 L50 50 L37 60 L42 45 L30 35 L45 35 Z"
-                fill="currentColor"
-                opacity="0.3"
-              />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#quiz-pattern)" />
-        </svg>
+        {/* Background Photo */}
+        <div
+          className="absolute inset-0 w-full h-full opacity-30 dark:opacity-20"
+          style={{
+            backgroundImage: `url('${backgroundImage}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
 
-        {/* Content (z-index to appear above SVG) */}
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white/50 dark:from-slate-900/70 dark:to-slate-900/50" />
+
+        {/* Content (z-index to appear above background) */}
         <div className="relative z-10 flex flex-col items-center">
           <div className="mb-6 text-6xl">📝</div>
           <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
@@ -151,35 +140,66 @@ function QuizWidget() {
 
   if (state === 'FINISHED') {
     return (
-      <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden">
-        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-          Quiz Complete!
-        </h1>
-        <div className="text-6xl font-bold mb-8 text-blue-600 dark:text-blue-400">
-          {quizData.score}/{quizData.questions.length}
+      <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
+        {/* Background Photo */}
+        <div
+          className="absolute inset-0 w-full h-full opacity-30 dark:opacity-20"
+          style={{
+            backgroundImage: `url('${backgroundImage}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+
+        {/* Gradient overlay for better text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white/50 dark:from-slate-900/70 dark:to-slate-900/50" />
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center">
+          <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+            Quiz Complete!
+          </h1>
+          <div className="text-6xl font-bold mb-8 text-blue-600 dark:text-blue-400">
+            {quizData.score}/{quizData.questions.length}
+          </div>
+          <p className="text-gray-600 dark:text-gray-300 mb-8">
+            {quizData.score === quizData.questions.length
+              ? "Perfect score! 🎉"
+              : quizData.score >= 6
+              ? "Great job! 👏"
+              : quizData.score >= 4
+              ? "Good effort! 👍"
+              : "Keep practicing! 💪"}
+          </p>
+          <button
+            onClick={handleRestart}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-lg"
+          >
+            Try Again
+          </button>
         </div>
-        <p className="text-gray-600 dark:text-gray-300 mb-8">
-          {quizData.score === quizData.questions.length
-            ? "Perfect score! 🎉"
-            : quizData.score >= 6
-            ? "Great job! 👏"
-            : quizData.score >= 4
-            ? "Good effort! 👍"
-            : "Keep practicing! 💪"}
-        </p>
-        <button
-          onClick={handleRestart}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
-        >
-          Try Again
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="h-[600px] flex flex-col bg-white dark:bg-slate-900 overflow-hidden">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+    <div className="h-[600px] flex flex-col bg-white dark:bg-slate-900 overflow-hidden relative">
+      {/* Background Photo */}
+      <div
+        className="absolute inset-0 w-full h-full opacity-20 dark:opacity-15"
+        style={{
+          backgroundImage: `url('${backgroundImage}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      />
+
+      {/* Gradient overlay for better text readability */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/80 to-white/60 dark:from-slate-900/80 dark:to-slate-900/60" />
+
+      <div className="relative z-10 flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="text-sm font-medium text-gray-600 dark:text-gray-300">
           Question {quizData.currentQuestionIndex + 1} of {quizData.questions.length}
         </div>
@@ -188,7 +208,7 @@ function QuizWidget() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col items-center justify-center p-6">
+      <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-6">
         <h2 className="text-2xl font-semibold mb-8 text-center text-gray-900 dark:text-white">
           {currentQuestion.question}
         </h2>
@@ -228,7 +248,7 @@ function QuizWidget() {
         </div>
       </div>
 
-      <div className="h-2 bg-gray-200 dark:bg-gray-700">
+      <div className="relative z-10 h-2 bg-gray-200 dark:bg-gray-700">
         <div
           className="h-full bg-blue-600 transition-all duration-300"
           style={{
