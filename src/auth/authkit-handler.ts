@@ -2,9 +2,10 @@ import type { AuthRequest, OAuthHelpers } from "@cloudflare/workers-oauth-provid
 import { Hono } from "hono";
 import * as jose from "jose";
 import { type AccessToken, type AuthenticationResponse, WorkOS } from "@workos-inc/node";
-import type { Env } from "./types";
+import type { Env } from "../types";
 import type { Props } from "./props";
-import { getUserByEmail, formatPurchaseRequiredPage, formatAccountDeletedPage, formatOAuthSuccessPage } from "./tokenUtils";
+import { getUserByEmail, formatPurchaseRequiredPage, formatAccountDeletedPage, formatOAuthSuccessPage } from "../shared/tokenUtils";
+import { logger } from "../shared/logger";
 
 // ============================================================
 // OAuth 2.1: PKCE (Proof Key for Code Exchange) Implementation

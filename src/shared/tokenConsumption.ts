@@ -10,6 +10,7 @@
 // CRITICAL PRINCIPLE: Always query database for current balance. Never cache.
 
 import type { D1Database } from '@cloudflare/workers-types';
+import { logger } from './logger';
 
 /**
  * Result of checking user's token balance

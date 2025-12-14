@@ -19,15 +19,21 @@
  * 4. Add tool schemas to handleToolsList() (around line 625)
  */
 
-import { validateApiKey } from "./apiKeys";
-import { getUserById } from "./tokenUtils";
+import { validateApiKey } from "./auth/apiKeys";
+import { getUserById } from "./shared/tokenUtils";
 import type { Env, ResponseFormat } from "./types";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import * as z from "zod/v4";  // Zod 4: namespace import required
 import { ApiClient } from "./api-client";
-import { checkBalance, consumeTokensWithRetry } from "./tokenConsumption";
-import { formatInsufficientTokensError, formatAccountDeletedError } from "./tokenUtils";
-import { sanitizeOutput, redactPII, validateOutput } from 'pilpat-mcp-security';
+import { executeStartQuiz } from "./tools";
+import { TOOL_METADATA, getToolDescription } from "./tools/descriptions";
+import { StartQuizInput } from "./schemas/inputs";
+import { StartQuizOutputSchema } from "./schemas/outputs";
+import { logger } from "./shared/logger";
+import { CACHE_CONFIG, SERVER_CONFIG } from "./shared/constants";
+import { UI_RESOURCES } from "./resources/ui-resources.js";
+import { SERVER_INSTRUCTIONS } from './server-instructions.js';
+
+const RESOURCE_URI_META_KEY = "ui/resourceUri";
 
 /**
  * Simple LRU (Least Recently Used) Cache for MCP Server instances
@@ -157,7 +163,7 @@ class LRUCache<K, V> {
  *
  * Workers have 128 MB memory limit, so 1000 servers leaves plenty of headroom.
  */
-const MAX_CACHED_SERVERS = 1000;
+const MAX_CACHED_SERVERS = CACHE_CONFIG.MAX_SERVERS;
 const serverCache = new LRUCache<string, McpServer>(MAX_CACHED_SERVERS);
 
 /**
@@ -266,8 +272,14 @@ async function getOrCreateServer(
 
   // Create new MCP server
   const server = new McpServer({
-    name: "Skeleton MCP Server (API Key)", // TODO: Update server name
-    version: "1.0.0",
+    name: SERVER_CONFIG.NAME,
+    version: SERVER_CONFIG.VERSION,
+  }, {
+    capabilities: {
+      tools: {},
+      resources: { listChanged: true }
+    },
+    instructions: SERVER_INSTRUCTIONS
   });
 
   // ========================================================================
@@ -285,18 +297,20 @@ async function getOrCreateServer(
   server.registerTool(
     "start_quiz",
     {
-      title: "Start General Knowledge Quiz",
-      description: "Starts the interactive general knowledge quiz widget with 8 questions across various topics. Returns an embedded UI where users answer questions and see their final score. The widget manages state internally and automatically sends a completion message to the host when finished. Use this when the user wants to test their knowledge with a quick, interactive quiz.",
-      inputSchema: {},
-      outputSchema: z.object({
-        message: z.string().meta({ description: "User-facing confirmation message" }),
-        widget_uri: z.string().meta({ description: "UI resource URI for widget rendering" })
-      }),
+      title: TOOL_METADATA.start_quiz.title,
+      description: getToolDescription("start_quiz"),
+      inputSchema: StartQuizInput,
+      outputSchema: StartQuizOutputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: false,
+        openWorldHint: false
+      },
       _meta: {
-        "ui/resourceUri": "ui://quiz/widget"
+        [RESOURCE_URI_META_KEY]: UI_RESOURCES.quiz.uri
       }
     },
-    async ({}) => await executeStartQuizTool({}, env, userId)
+    async (params) => executeStartQuiz(params, env, userId, email)
   );
 
   // Cache the server (automatic LRU eviction if cache is full)
@@ -527,7 +541,7 @@ async function handleToolsCall(
 
     switch (toolName) {
       case "start_quiz":
-        result = await executeStartQuizTool(toolArgs, env, userId);
+        result = await executeStartQuiz(toolArgs, env, userId, userEmail);
         break;
 
       default:
@@ -553,78 +567,8 @@ async function handleToolsCall(
 // LOCATION 4: TOOL EXECUTOR FUNCTIONS
 // ==============================================================================
 
-/**
- * Execute start_quiz tool for API key authentication
- * Implements 7-step token pattern with idempotency
- */
-async function executeStartQuizTool(
-  args: Record<string, any>,
-  env: Env,
-  userId: string
-): Promise<any> {
-  const TOOL_COST = 5;
-  const TOOL_NAME = "start_quiz";
-  const actionId = crypto.randomUUID();
-
-  // Step 2: Check token balance
-  const balanceCheck = await checkBalance(env.TOKEN_DB, userId, TOOL_COST);
-
-  // Step 3: Handle insufficient balance
-  if (balanceCheck.userDeleted) {
-    throw new Error(formatAccountDeletedError(TOOL_NAME));
-  }
-  if (!balanceCheck.sufficient) {
-    throw new Error(formatInsufficientTokensError(TOOL_NAME, balanceCheck.currentBalance, TOOL_COST));
-  }
-
-  // Step 4: Execute business logic (no external API)
-  const result = {
-    message: "Quiz started! Complete all 8 questions to see your score.",
-    widget_uri: "ui://quiz/widget"
-  };
-
-  // Step 4.5: Security processing (minimal for widget-only)
-  const sanitized = sanitizeOutput(JSON.stringify(result), {
-    maxLength: 500,
-    removeHtml: true,
-    removeControlChars: true,
-    normalizeWhitespace: true
-  });
-
-  const { redacted } = redactPII(sanitized, {
-    redactEmails: false,
-    redactPhones: false,
-    redactCreditCards: false,
-    redactSSN: false,
-    redactBankAccounts: false,
-    redactPESEL: false,
-    redactPolishIdCard: false,
-    redactPolishPassport: false,
-    redactPolishPhones: false,
-    placeholder: '[REDACTED]'
-  });
-
-  const finalResult = JSON.parse(redacted);
-
-  // Step 5: Consume tokens with idempotency
-  await consumeTokensWithRetry(
-    env.TOKEN_DB,
-    userId,
-    TOOL_COST,
-    'quiz',
-    TOOL_NAME,
-    {},  // No parameters
-    finalResult,
-    true,
-    actionId
-  );
-
-  // Step 6: Return with structuredContent
-  return {
-    content: [{ type: "text", text: finalResult.message }],
-    structuredContent: finalResult
-  };
-}
+// Tool executors moved to src/tools/quiz-tools.ts for single source of truth
+// This eliminates duplication between OAuth (server.ts) and API key paths
 
 // ==============================================================================
 // JSON-RPC & UTILITY FUNCTIONS
