@@ -11,7 +11,9 @@ export interface UIResourceMeta {
     };
     prefersBorder: boolean;
     domain?: string;
+    icon?: string;                 // Optional icon for visual identity
   };
+  priority?: number;               // Optional priority for resource ordering
 }
 
 export interface UIResourceDefinition {
@@ -35,7 +37,9 @@ export const UI_RESOURCES = {
           resourceDomains: [],     // All assets bundled in HTML
         },
         prefersBorder: true,
+        icon: "📝",                // Visual identity for quiz
       },
+      priority: 1,                 // High priority resource
     },
   },
 } satisfies Record<string, UIResourceDefinition>;

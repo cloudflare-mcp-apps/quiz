@@ -1,6 +1,6 @@
-# Skeleton MCP Server - Quick Start Template
+# Quiz MCP Server - Interactive General Knowledge Quiz
 
-Production-ready template for building Cloudflare MCP servers with integrated token system.
+Production-ready interactive quiz widget for MCP clients with general knowledge questions.
 
 ## Features
 
@@ -356,11 +356,9 @@ cd /Users/patpil/Documents/ai-projects/Cloudflare_mcp
 6. Tokens deducted after successful execution
 7. All transactions logged atomically
 
-### Example Tools Included
+### Example Tool Included
 
-- **simpleLookup** (1 token) - Simple data lookup demonstrating low-cost operations
-- **searchAndAnalyze** (2 tokens) - Consolidated search with filtering and analysis
-- **processWithSecurity** (3 tokens) - Secure data processing with PII redaction and output sanitization
+- **start_quiz** (5 tokens) - Launch interactive 8-question quiz widget
 
 ## Phase 2 Security
 

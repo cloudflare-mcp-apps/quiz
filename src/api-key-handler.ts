@@ -280,43 +280,24 @@ async function getOrCreateServer(
   // ========================================================================
   // LOCATION 1: TOOL REGISTRATION SECTION
   // ========================================================================
-  // Tools will be generated here by the automated boilerplate generator
-  // Usage: npm run generate-tool --prp PRPs/your-prp.md --tool-id your_tool --output snippets
-  //
-  // Or implement tools manually following the 7-Step Token Pattern:
-  // Step 0: Generate actionId for idempotency
-  // Step 1: userId parameter is already available in this function scope
-  // Step 2: Check token balance with checkBalance(env.TOKEN_DB, userId, TOOL_COST)
-  // Step 3: Handle insufficient balance and deleted users
-  // Step 4: Execute business logic
-  // Step 4.5: Apply security (sanitizeOutput + redactPII)
-  // Step 5: Consume tokens with consumeTokensWithRetry()
-  // Step 6: Return result with BOTH content and structuredContent
-  //
-  // Use registerTool() API (SDK 1.20+)
-  //
-  // server.registerTool(
-  //   "get_currency_rate",
-  //   {
-  //     title: "Get Currency Rate",  // NEW: Display name for UI
-  //     description: "Get current or historical buy/sell exchange rates from the Polish National Bank (NBP). " +
-  //                  "Returns bid/ask prices in PLN from NBP Table C. Use this when you need exchange rates. " +
-  //                  "Note: NBP only publishes rates on trading days.",
-  //     inputSchema: { ... },
-  //     outputSchema: z.object({...})  // NEW: Output validation
-  //   },
-  //   async ({ currencyCode, date }) => { ... }
-  // );
-  //
-  // Tool Description Pattern (2-Part Structure):
-  // "[Action Verb] [functionality] from [source]. " +           // Part 1: Purpose
-  // "Returns [specific fields]. Use this when [scenario]. " +   // Part 2: Details
-  // "Note: [constraint]. "                                       // Part 2: Constraints (if applicable)
-  //
-  // CRITICAL: Tool descriptions MUST be IDENTICAL in both OAuth (server.ts) and API Key paths
-  // CRITICAL: Return values MUST include structuredContent for LLM comprehension
-  //
-  // TODO: Add your tools here using server.registerTool() calls
+
+  // Tool: start_quiz (5 tokens)
+  server.registerTool(
+    "start_quiz",
+    {
+      title: "Start General Knowledge Quiz",
+      description: "Starts the interactive general knowledge quiz widget with 8 questions across various topics. Returns an embedded UI where users answer questions and see their final score. The widget manages state internally and automatically sends a completion message to the host when finished. Use this when the user wants to test their knowledge with a quick, interactive quiz.",
+      inputSchema: {},
+      outputSchema: z.object({
+        message: z.string().meta({ description: "User-facing confirmation message" }),
+        widget_uri: z.string().meta({ description: "UI resource URI for widget rendering" })
+      }),
+      _meta: {
+        "ui/resourceUri": "ui://quiz/widget"
+      }
+    },
+    async ({}) => await executeStartQuizTool({}, env, userId)
+  );
 
   // Cache the server (automatic LRU eviction if cache is full)
   serverCache.set(userId, server);
@@ -484,42 +465,16 @@ async function handleToolsList(
   // ========================================================================
   // LOCATION 2: TOOL SCHEMA DEFINITIONS
   // ========================================================================
-  // Manually define tools since McpServer doesn't expose listTools()
-  // These schemas MUST match the tools registered in getOrCreateServer() using registerTool()
-  // These must also match the schemas in Location 1 of src/server.ts
-  //
-  // CRITICAL: Descriptions MUST be IDENTICAL across all 3 locations:
-  // - Location 1 (server.ts): server.registerTool() calls
-  // - Location 1 (api-key-handler.ts): server.registerTool() calls
-  // - Location 2 (api-key-handler.ts): handleToolsList() schemas
-  // - Use the SAME description string from registerTool() description field
-  //
-  // TODO: Add tool schemas here when implementing tools
-  //
-  // Example:
-  // {
-  //   name: "get_currency_rate",
-  //   description: "Get current or historical buy/sell exchange rates from the Polish National Bank (NBP). " +
-  //                "Returns bid/ask prices in PLN from NBP Table C. Use this when you need exchange rates. " +
-  //                "Note: NBP only publishes rates on trading days.",
-  //   inputSchema: {
-  //     type: "object",
-  //     properties: {
-  //       currencyCode: {
-  //         type: "string",
-  //         enum: ["USD", "EUR", "GBP"],
-  //         description: "Three-letter ISO 4217 code. Example: 'USD'"
-  //       },
-  //       date: {
-  //         type: "string",
-  //         description: "Date in YYYY-MM-DD format (e.g., '2025-10-01'). If omitted, returns most recent rate."
-  //       }
-  //     },
-  //     required: ["currencyCode"]
-  //   }
-  // }
   const tools: any[] = [
-    // Tools will be added here (manually or via generator)
+    {
+      name: "start_quiz",
+      description: "Starts the interactive general knowledge quiz widget with 8 questions across various topics. Returns an embedded UI where users answer questions and see their final score. The widget manages state internally and automatically sends a completion message to the host when finished. Use this when the user wants to test their knowledge with a quick, interactive quiz.",
+      inputSchema: {
+        type: "object",
+        properties: {},
+        required: []
+      }
+    }
   ];
 
   return jsonRpcResponse(request.id, {
@@ -569,19 +524,11 @@ async function handleToolsCall(
     // ========================================================================
     // LOCATION 3: TOOL SWITCH CASES
     // ========================================================================
-    // Route tool calls to executor functions
-    // TODO: Add cases for your tools here!
-    //
-    // Example:
-    // case "get_currency_rate":
-    //   result = await executeGetCurrencyRateTool(toolArgs, env, userId);
-    //   break;
-    //
-    // CRITICAL: Case names MUST match tool IDs from getOrCreateServer() and handleToolsList()
-    // CRITICAL: Executor functions MUST return { content: [...], structuredContent: data }
 
     switch (toolName) {
-      // Tools will be added here (manually or via generator)
+      case "start_quiz":
+        result = await executeStartQuizTool(toolArgs, env, userId);
+        break;
 
       default:
         return jsonRpcResponse(request.id, null, {
@@ -605,75 +552,79 @@ async function handleToolsCall(
 // ==============================================================================
 // LOCATION 4: TOOL EXECUTOR FUNCTIONS
 // ==============================================================================
-// Executor functions implement the actual tool logic for API key authentication
-// These functions are called from the switch statement in handleToolsCall()
-//
-// TODO: Add tool executor functions here
-//
-// Example format:
-// async function executeGetCurrencyRateTool(
-//   args: Record<string, any>,
-//   env: Env,
-//   userId: string
-// ): Promise<any> {
-//   const TOOL_COST = 1;
-//   const TOOL_NAME = "get_currency_rate";
-//   const actionId = crypto.randomUUID();
-//
-//   // Step 2: Check token balance
-//   const balanceCheck = await checkBalance(env.TOKEN_DB, userId, TOOL_COST);
-//
-//   // Step 3: Handle insufficient balance
-//   if (balanceCheck.userDeleted) {
-//     throw new Error(formatAccountDeletedError(TOOL_NAME));
-//   }
-//   if (!balanceCheck.sufficient) {
-//     throw new Error(formatInsufficientTokensError(TOOL_NAME, balanceCheck.currentBalance, TOOL_COST));
-//   }
-//
-//   // Step 4: Execute business logic
-//   const { currencyCode, date } = args;
-//   const endpoint = date
-//     ? `${NBP_API}/rates/c/${currencyCode}/${date}?format=json`
-//     : `${NBP_API}/rates/c/${currencyCode}?format=json`;
-//   const response = await fetch(endpoint);
-//   const data = await response.json();
-//
-//   // Step 4.5: Apply security (sanitizeOutput + redactPII)
-//   const sanitized = sanitizeOutput(JSON.stringify(data), {
-//     removeHtml: true,
-//     removeControlChars: true,
-//     normalizeWhitespace: true,
-//     maxLength: 5000
-//   });
-//   const { redacted, detectedPII } = redactPII(sanitized, {
-//     redactPhones: true,
-//     redactCreditCards: true,
-//     redactPESEL: true
-//   });
-//
-//   // Step 5: Consume tokens
-//   await consumeTokensWithRetry(
-//     env.TOKEN_DB,
-//     userId,
-//     TOOL_COST,
-//     "skeleton-mcp",  // TODO: Replace with your server slug
-//     TOOL_NAME,
-//     args,
-//     redacted,
-//     true,
-//     actionId
-//   );
-//
-//   // Step 6: Return result with BOTH content and structuredContent
-//   // structuredContent (NEW in SDK 1.20+) provides machine-readable data for LLMs
-//   return {
-//     content: [{ type: "text", text: redacted }],
-//     structuredContent: data  // NEW: Direct structured access (raw API response)
-//   };
-// }
-//
-// CRITICAL: Executor logic MUST be IDENTICAL to OAuth path (src/server.ts)
+
+/**
+ * Execute start_quiz tool for API key authentication
+ * Implements 7-step token pattern with idempotency
+ */
+async function executeStartQuizTool(
+  args: Record<string, any>,
+  env: Env,
+  userId: string
+): Promise<any> {
+  const TOOL_COST = 5;
+  const TOOL_NAME = "start_quiz";
+  const actionId = crypto.randomUUID();
+
+  // Step 2: Check token balance
+  const balanceCheck = await checkBalance(env.TOKEN_DB, userId, TOOL_COST);
+
+  // Step 3: Handle insufficient balance
+  if (balanceCheck.userDeleted) {
+    throw new Error(formatAccountDeletedError(TOOL_NAME));
+  }
+  if (!balanceCheck.sufficient) {
+    throw new Error(formatInsufficientTokensError(TOOL_NAME, balanceCheck.currentBalance, TOOL_COST));
+  }
+
+  // Step 4: Execute business logic (no external API)
+  const result = {
+    message: "Quiz started! Complete all 8 questions to see your score.",
+    widget_uri: "ui://quiz/widget"
+  };
+
+  // Step 4.5: Security processing (minimal for widget-only)
+  const sanitized = sanitizeOutput(JSON.stringify(result), {
+    maxLength: 500,
+    removeHtml: true,
+    removeControlChars: true,
+    normalizeWhitespace: true
+  });
+
+  const { redacted } = redactPII(sanitized, {
+    redactEmails: false,
+    redactPhones: false,
+    redactCreditCards: false,
+    redactSSN: false,
+    redactBankAccounts: false,
+    redactPESEL: false,
+    redactPolishIdCard: false,
+    redactPolishPassport: false,
+    redactPolishPhones: false,
+    placeholder: '[REDACTED]'
+  });
+
+  const finalResult = JSON.parse(redacted);
+
+  // Step 5: Consume tokens with idempotency
+  await consumeTokensWithRetry(
+    env.TOKEN_DB,
+    userId,
+    TOOL_COST,
+    'quiz',
+    TOOL_NAME,
+    {},  // No parameters
+    finalResult,
+    true,
+    actionId
+  );
+
+  // Step 6: Return with structuredContent
+  return {
+    content: [{ type: "text", text: finalResult.message }],
+    structuredContent: finalResult
+  };
+}
 
 // ==============================================================================
 // JSON-RPC & UTILITY FUNCTIONS

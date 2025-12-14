@@ -8,6 +8,7 @@ import { formatInsufficientTokensError, formatAccountDeletedError } from "./toke
 import { sanitizeOutput, redactPII } from 'pilpat-mcp-security';
 import { loadHtml } from "./helpers/assets.js";
 import { UI_RESOURCES, UI_MIME_TYPE } from "./resources/ui-resources.js";
+import { SERVER_INSTRUCTIONS } from './server-instructions.js';
 
 /**
  * Quiz MCP - General Knowledge Quiz Widget
@@ -30,7 +31,8 @@ export class Quiz extends McpAgent<Env, unknown, Props> {
             capabilities: {
                 tools: {},
                 resources: { listChanged: true }  // SEP-1865: Enable resource discovery
-            }
+            },
+            instructions: SERVER_INSTRUCTIONS  // Injected into LLM system prompt
         }
     );
 
@@ -79,6 +81,11 @@ export class Quiz extends McpAgent<Env, unknown, Props> {
                     message: z.string().meta({ description: "User-facing confirmation message" }),
                     widget_uri: z.string().meta({ description: "UI resource URI for widget rendering" })
                 }),
+                annotations: {
+                    readOnlyHint: true,      // Safe operation (no state mutation)
+                    idempotentHint: false,   // Each quiz is unique session
+                    openWorldHint: false     // No external interactions
+                },
                 _meta: {
                     "ui/resourceUri": UI_RESOURCES.quiz.uri
                 }
