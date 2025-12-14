@@ -103,7 +103,7 @@ function QuizWidget() {
       <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
         {/* Inline SVG Background Pattern */}
         <svg
-          className="absolute inset-0 w-full h-full opacity-[0.03] dark:opacity-[0.02]"
+          className="absolute inset-0 w-full h-full opacity-[0.15] dark:opacity-[0.08]"
           xmlns="http://www.w3.org/2000/svg"
         >
           <defs>
