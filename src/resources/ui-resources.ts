@@ -34,7 +34,7 @@ export const UI_RESOURCES = {
       ui: {
         csp: {
           connectDomains: [],      // No external API calls
-          resourceDomains: [],     // All assets bundled in HTML
+          resourceDomains: ["data:"],  // Allow base64/data URI images (photo background)
         },
         prefersBorder: true,
         icon: "📝",                // Visual identity for quiz
