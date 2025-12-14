@@ -4,6 +4,7 @@ Production-ready interactive quiz widget for MCP clients with general knowledge 
 
 ## Features
 
+✅ **Interactive Widget UI** - Beautiful welcome screen with SVG background pattern
 ✅ **Dual Transport Support** - Both SSE (legacy) and Streamable HTTP (future standard)
 ✅ **ChatGPT Ready** - Works with ChatGPT out-of-the-box (requires `/mcp` endpoint)
 ✅ **Claude Desktop Compatible** - Works with Claude Desktop via `/sse` endpoint
@@ -11,6 +12,7 @@ Production-ready interactive quiz widget for MCP clients with general knowledge 
 ✅ **WorkOS Magic Auth** - Email + 6-digit code authentication
 ✅ **Production-Ready** - Complete error handling, logging, type safety
 ✅ **15-30 Minute Setup** - Copy, customize, deploy
+✅ **Dark Mode Support** - Automatic theme adaptation for welcome screen
 
 ## Quick Setup
 
