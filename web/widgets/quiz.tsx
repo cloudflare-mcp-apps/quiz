@@ -23,10 +23,10 @@ function QuizWidget() {
     },
     capabilities: {},
     onAppCreated: (appInstance) => {
-      // Handle tool result (widget starts on tool invocation)
+      // Handle tool result (widget loads - show welcome screen first)
       appInstance.ontoolresult = () => {
-        console.log('[Quiz] Tool result received - starting quiz');
-        setState('PLAYING');
+        console.log('[Quiz] Tool result received - showing welcome screen');
+        // Stay in IDLE state to show welcome screen
       };
 
       // Handle theme changes
@@ -100,19 +100,51 @@ function QuizWidget() {
 
   if (state === 'IDLE') {
     return (
-      <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden">
-        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
-          General Knowledge Quiz
-        </h1>
-        <p className="text-gray-600 dark:text-gray-300 mb-8">
-          8 questions to test your knowledge
-        </p>
-        <button
-          onClick={() => setState('PLAYING')}
-          className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors"
+      <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
+        {/* Inline SVG Background Pattern */}
+        <svg
+          className="absolute inset-0 w-full h-full opacity-[0.03] dark:opacity-[0.02]"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          Start Quiz
-        </button>
+          <defs>
+            <pattern
+              id="quiz-pattern"
+              x="0"
+              y="0"
+              width="100"
+              height="100"
+              patternUnits="userSpaceOnUse"
+            >
+              <circle cx="25" cy="25" r="2" fill="currentColor" />
+              <circle cx="75" cy="25" r="2" fill="currentColor" />
+              <circle cx="25" cy="75" r="2" fill="currentColor" />
+              <circle cx="75" cy="75" r="2" fill="currentColor" />
+              <path
+                d="M50 20 L55 35 L70 35 L58 45 L63 60 L50 50 L37 60 L42 45 L30 35 L45 35 Z"
+                fill="currentColor"
+                opacity="0.3"
+              />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#quiz-pattern)" />
+        </svg>
+
+        {/* Content (z-index to appear above SVG) */}
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="mb-6 text-6xl">📝</div>
+          <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">
+            General Knowledge Quiz
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-8">
+            8 questions to test your knowledge
+          </p>
+          <button
+            onClick={() => setState('PLAYING')}
+            className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-lg"
+          >
+            Start Quiz
+          </button>
+        </div>
       </div>
     );
   }
