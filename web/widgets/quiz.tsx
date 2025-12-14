@@ -106,7 +106,7 @@ function QuizWidget() {
         <img
           src={backgroundImage}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-30 dark:opacity-20"
+          className="absolute inset-0 w-full h-full object-cover opacity-50 dark:opacity-40"
           aria-hidden="true"
         />
 
@@ -140,7 +140,7 @@ function QuizWidget() {
         <img
           src={backgroundImage}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-30 dark:opacity-20"
+          className="absolute inset-0 w-full h-full object-cover opacity-50 dark:opacity-40"
           aria-hidden="true"
         />
 
@@ -179,9 +179,9 @@ function QuizWidget() {
     <div className="h-[600px] flex flex-col bg-white dark:bg-slate-900 overflow-hidden relative">
       {/* Background Photo */}
       <img
-        src={backgroundImageSrc}
+        src={backgroundImage}
         alt=""
-        className="absolute inset-0 w-full h-full object-cover opacity-20 dark:opacity-15"
+        className="absolute inset-0 w-full h-full object-cover opacity-40 dark:opacity-30"
         aria-hidden="true"
       />
 
