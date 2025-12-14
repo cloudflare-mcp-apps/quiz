@@ -4,6 +4,7 @@ import { useApp } from '@modelcontextprotocol/ext-apps/react';
 import type { QuizState, QuizData } from '../lib/types';
 import { QUIZ_QUESTIONS } from '../lib/quizData';
 import '../styles/globals.css';
+import backgroundImage from './photo_background.webp';
 
 function QuizWidget() {
   const [state, setState] = useState<QuizState>('IDLE');
@@ -98,15 +99,12 @@ function QuizWidget() {
     });
   };
 
-  // Background image served via Worker endpoint (CSP-compliant)
-  const backgroundImageSrc = 'https://quiz.wtyczki.ai/quiz-background.webp';
-
   if (state === 'IDLE') {
     return (
       <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
         {/* Background Photo */}
         <img
-          src={backgroundImageSrc}
+          src={backgroundImage}
           alt=""
           className="absolute inset-0 w-full h-full object-cover opacity-30 dark:opacity-20"
           aria-hidden="true"
@@ -140,7 +138,7 @@ function QuizWidget() {
       <div className="h-[600px] flex flex-col items-center justify-center bg-white dark:bg-slate-900 overflow-hidden relative">
         {/* Background Photo */}
         <img
-          src={backgroundImageSrc}
+          src={backgroundImage}
           alt=""
           className="absolute inset-0 w-full h-full object-cover opacity-30 dark:opacity-20"
           aria-hidden="true"

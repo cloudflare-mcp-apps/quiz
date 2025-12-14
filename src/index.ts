@@ -74,24 +74,6 @@ export default {
             const url = new URL(request.url);
             const authHeader = request.headers.get("Authorization");
 
-            // Serve quiz background image (public, no auth required)
-            if (url.pathname === "/quiz-background.webp") {
-                const assetUrl = new URL("photo_background.webp", new URL(request.url).origin + "/");
-                const assetResponse = await env.ASSETS.fetch(assetUrl);
-
-                if (assetResponse.ok) {
-                    return new Response(assetResponse.body, {
-                        headers: {
-                            "Content-Type": "image/webp",
-                            "Cache-Control": "public, max-age=31536000, immutable",
-                            "Access-Control-Allow-Origin": "*",
-                        },
-                    });
-                }
-
-                return new Response("Image not found", { status: 404 });
-            }
-
             // Check for API key authentication on MCP endpoints
             if (isApiKeyRequest(url.pathname, authHeader)) {
                 console.log(`🔐 [Dual Auth] API key request detected: ${url.pathname}`);
