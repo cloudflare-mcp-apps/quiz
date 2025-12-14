@@ -23,17 +23,17 @@ import { validateApiKey } from "./auth/apiKeys";
 import { getUserById } from "./shared/tokenUtils";
 import type { Env, ResponseFormat } from "./types";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { RESOURCE_URI_META_KEY } from "@modelcontextprotocol/ext-apps";
 import { ApiClient } from "./api-client";
 import { executeStartQuiz } from "./tools";
-import { TOOL_METADATA, getToolDescription } from "./tools/descriptions";
+import { TOOL_METADATA, getToolDescription } from "./tool-descriptions";
 import { StartQuizInput } from "./schemas/inputs";
 import { StartQuizOutputSchema } from "./schemas/outputs";
 import { logger } from "./shared/logger";
 import { CACHE_CONFIG, SERVER_CONFIG } from "./shared/constants";
-import { UI_RESOURCES } from "./resources/ui-resources.js";
+import { UI_RESOURCES, UI_MIME_TYPE } from "./resources/ui-resources.js";
+import { loadHtml } from "./helpers/assets.js";
 import { SERVER_INSTRUCTIONS } from './server-instructions.js';
-
-const RESOURCE_URI_META_KEY = "ui/resourceUri";
 
 /**
  * Simple LRU (Least Recently Used) Cache for MCP Server instances
@@ -283,6 +283,35 @@ async function getOrCreateServer(
   });
 
   // ========================================================================
+  // SEP-1865 MCP Apps: UI Resource Registration
+  // ========================================================================
+  const quizResource = UI_RESOURCES.quiz;
+
+  server.registerResource(
+    quizResource.name,
+    quizResource.uri,
+    {
+      description: quizResource.description,
+      mimeType: quizResource.mimeType
+    },
+    async () => {
+      // Load built widget from Assets binding
+      const templateHTML = await loadHtml(env.ASSETS, "/quiz.html");
+
+      return {
+        contents: [{
+          uri: quizResource.uri,
+          mimeType: UI_MIME_TYPE,
+          text: templateHTML,
+          _meta: quizResource._meta as Record<string, unknown>
+        }]
+      };
+    }
+  );
+
+  console.log(`✅ [API Key] UI resource registered: ${quizResource.uri}`);
+
+  // ========================================================================
   // API CLIENT INITIALIZATION
   // ========================================================================
   // TODO: Initialize your custom API client here when implementing tools
@@ -440,8 +469,8 @@ function handleInitialize(request: {
       tools: {},
     },
     serverInfo: {
-      name: "Skeleton MCP Server", // TODO: Update server name
-      version: "1.0.0",
+      name: SERVER_CONFIG.NAME,
+      version: SERVER_CONFIG.VERSION,
     },
   });
 }

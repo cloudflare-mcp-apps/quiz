@@ -11,7 +11,11 @@
     "cf-typegen": "wrangler types",
     "build:widget:quiz": "INPUT=widgets/quiz.html vite build",
     "build:widgets": "npm run build:widget:quiz",
-    "dev:widget": "INPUT=widgets/quiz.html vite build --watch"
+    "dev:widget": "INPUT=widgets/quiz.html vite build --watch",
+    "dev:serve": "cd web && vite preview",
+    "dev:all": "concurrently \"npm run dev:widget\" \"npm run dev:serve\"",
+    "serve": "cd web && vite preview",
+    "start": "npm run dev:all"
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^0.1.0",
@@ -33,6 +37,7 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.19",
+    "concurrently": "^9.2.1",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.16",
     "typescript": "^5.9.2",

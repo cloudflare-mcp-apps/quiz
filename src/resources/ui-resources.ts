@@ -3,6 +3,8 @@
  * Each resource represents an interactive widget delivered via Assets binding.
  */
 
+import { RESOURCE_MIME_TYPE } from "@modelcontextprotocol/ext-apps";
+
 export interface UIResourceMeta {
   ui: {
     csp: {
@@ -29,7 +31,7 @@ export const UI_RESOURCES = {
     uri: "ui://quiz/widget",
     name: "quiz_widget",
     description: "Interactive general knowledge quiz with 8 questions. Widget manages state internally and sends completion message to host.",
-    mimeType: "text/html;profile=mcp-app" as const,
+    mimeType: RESOURCE_MIME_TYPE,
     _meta: {
       ui: {
         csp: {
@@ -44,4 +46,4 @@ export const UI_RESOURCES = {
   },
 } satisfies Record<string, UIResourceDefinition>;
 
-export const UI_MIME_TYPE = "text/html;profile=mcp-app";
+export const UI_MIME_TYPE = RESOURCE_MIME_TYPE;

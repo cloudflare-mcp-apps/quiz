@@ -179,41 +179,59 @@ else
 fi
 echo ""
 
-# Check 11: Security imports in server.ts (OAuth path)
-echo "📋 [11/12] Checking security imports in server.ts..."
+# Check 11: Security imports (OAuth path - server.ts OR centralized)
+echo "📋 [11/12] Checking security imports (OAuth path)..."
 if [ ! -f "src/server.ts" ]; then
   echo "⚠️  WARNING: src/server.ts not found"
   WARNINGS=$((WARNINGS + 1))
-elif ! grep -q "from 'pilpat-mcp-security'" src/server.ts 2>/dev/null; then
-  echo "❌ ERROR: Missing security imports in src/server.ts"
-  echo "   Add: import { sanitizeOutput, redactPII, validateOutput } from 'pilpat-mcp-security';"
-  echo "   This is MANDATORY for Phase 2 security (Step 4.5)"
-  ERRORS=$((ERRORS + 1))
-elif ! grep -q "sanitizeOutput\|redactPII\|validateOutput" src/server.ts 2>/dev/null; then
-  echo "⚠️  WARNING: Security imports exist but functions may not be used"
-  echo "   Verify all tools implement Step 4.5 security processing"
-  WARNINGS=$((WARNINGS + 1))
+# Check for centralized pattern first (preferred)
+elif [ -f "src/shared/tool-executor.ts" ] && grep -q "from.*pilpat-mcp-security" src/shared/tool-executor.ts 2>/dev/null; then
+  echo "✅ Security processing centralized in tool-executor.ts (advanced pattern)"
+# Check for direct pattern (legacy)
+elif grep -q "from 'pilpat-mcp-security'" src/server.ts 2>/dev/null || grep -q 'from "pilpat-mcp-security"' src/server.ts 2>/dev/null; then
+  if ! grep -q "sanitizeOutput\|redactPII" src/server.ts 2>/dev/null; then
+    echo "⚠️  WARNING: Security imports exist but functions may not be used"
+    echo "   Verify all tools implement Step 4.5 security processing"
+    WARNINGS=$((WARNINGS + 1))
+  else
+    echo "✅ Security imports present in server.ts"
+  fi
 else
-  echo "✅ Security imports present in server.ts"
+  echo "❌ ERROR: Missing security implementation"
+  echo "   Option 1 (Recommended): Use centralized pattern in src/shared/tool-executor.ts"
+  echo "   Option 2: Add imports to src/server.ts: import { sanitizeOutput, redactPII } from 'pilpat-mcp-security';"
+  ERRORS=$((ERRORS + 1))
 fi
 echo ""
 
-# Check 12: Security imports in api-key-handler.ts (API key path)
-echo "📋 [12/12] Checking security imports in api-key-handler.ts..."
+# Check 12: Security imports (API key path - api-key-handler.ts OR centralized)
+echo "📋 [12/12] Checking security imports (API key path)..."
 if [ ! -f "src/api-key-handler.ts" ]; then
   echo "⚠️  WARNING: src/api-key-handler.ts not found"
   WARNINGS=$((WARNINGS + 1))
-elif ! grep -q "from 'pilpat-mcp-security'" src/api-key-handler.ts 2>/dev/null; then
-  echo "❌ ERROR: Missing security imports in api-key-handler.ts"
-  echo "   Add: import { sanitizeOutput, redactPII, validateOutput } from 'pilpat-mcp-security';"
-  echo "   API key path MUST have same security as OAuth path"
-  ERRORS=$((ERRORS + 1))
-elif ! grep -q "sanitizeOutput\|redactPII\|validateOutput" src/api-key-handler.ts 2>/dev/null; then
-  echo "⚠️  WARNING: Security imports exist but functions may not be used"
-  echo "   Verify all tools implement Step 4.5 security processing"
-  WARNINGS=$((WARNINGS + 1))
+# Check for centralized pattern first (preferred)
+elif [ -f "src/shared/tool-executor.ts" ] && grep -q "from.*pilpat-mcp-security" src/shared/tool-executor.ts 2>/dev/null; then
+  # Verify API key path uses the centralized executor
+  if grep -q "executeToolWithTokenConsumption\|executeStartQuiz" src/api-key-handler.ts 2>/dev/null; then
+    echo "✅ Security processing shared via tool-executor.ts (advanced pattern)"
+  else
+    echo "⚠️  WARNING: Centralized security exists but API key path may not use it"
+    WARNINGS=$((WARNINGS + 1))
+  fi
+# Check for direct pattern (legacy)
+elif grep -q "from 'pilpat-mcp-security'" src/api-key-handler.ts 2>/dev/null || grep -q 'from "pilpat-mcp-security"' src/api-key-handler.ts 2>/dev/null; then
+  if ! grep -q "sanitizeOutput\|redactPII" src/api-key-handler.ts 2>/dev/null; then
+    echo "⚠️  WARNING: Security imports exist but functions may not be used"
+    echo "   Verify all tools implement Step 4.5 security processing"
+    WARNINGS=$((WARNINGS + 1))
+  else
+    echo "✅ Security imports present in api-key-handler.ts"
+  fi
 else
-  echo "✅ Security imports present in api-key-handler.ts"
+  echo "❌ ERROR: Missing security implementation"
+  echo "   Option 1 (Recommended): Use centralized pattern in src/shared/tool-executor.ts"
+  echo "   Option 2: Add imports to src/api-key-handler.ts: import { sanitizeOutput, redactPII } from 'pilpat-mcp-security';"
+  ERRORS=$((ERRORS + 1))
 fi
 echo ""
 

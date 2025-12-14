@@ -11,5 +11,5 @@
 export { executeStartQuiz } from './quiz-tools';
 
 // Tool metadata
-export { TOOL_METADATA, getToolDescription, getToolCost, getToolCostRationale, getToolExamples } from './descriptions';
-export type { ToolMetadata, ToolName } from './descriptions';
+export { TOOL_METADATA, getToolDescription, getToolCost, getToolCostRationale, getToolExamples } from '../tool-descriptions';
+export type { ToolMetadata, ToolName } from '../tool-descriptions';

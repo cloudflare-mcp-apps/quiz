@@ -29,6 +29,12 @@ General Knowledge Quiz - Interactive widget-based quiz with 8 questions
 - No rate limits (pure client-side widget)
 - Results not cached (each session is unique)
 
+## Error Handling
+- If widget fails to load, refresh the interface
+- No authentication errors (uses centralized OAuth)
+- No rate limit errors (client-side only)
+- Token deduction occurs before widget launch
+
 ## Important Notes
 - Zero-latency experience (no API wait times)
 - Widget auto-closes and sends completion message when finished

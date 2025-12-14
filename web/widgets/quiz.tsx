@@ -1,10 +1,19 @@
-import { StrictMode, useState } from 'react';
+import { StrictMode, useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { useApp } from '@modelcontextprotocol/ext-apps/react';
+import { McpUiToolCancelledNotificationSchema } from '@modelcontextprotocol/ext-apps';
 import type { QuizState, QuizData } from '../lib/types';
 import { QUIZ_QUESTIONS } from '../lib/quizData';
+import { runSecuritySelfTest } from '../lib/security-test';
 import '../styles/globals.css';
 import backgroundImage from './photo_background.webp';
+
+// Prefixed logging pattern for better debugging
+const log = {
+  info: console.log.bind(console, '[Quiz Widget]'),
+  warn: console.warn.bind(console, '[Quiz Widget]'),
+  error: console.error.bind(console, '[Quiz Widget]'),
+};
 
 function QuizWidget() {
   const [state, setState] = useState<QuizState>('IDLE');
@@ -24,30 +33,64 @@ function QuizWidget() {
     },
     capabilities: {},
     onAppCreated: (appInstance) => {
+      // Handle tool input
+      appInstance.ontoolinput = (params) => {
+        log.info('Tool input received:', params.arguments);
+        // For quiz, we don't use input params, but handler should exist
+      };
+
       // Handle tool result (widget loads - show welcome screen first)
       appInstance.ontoolresult = () => {
-        console.log('[Quiz] Tool result received - showing welcome screen');
+        log.info('Tool result received - showing welcome screen');
         // Stay in IDLE state to show welcome screen
       };
 
-      // Handle theme changes
+      // Handle errors
+      appInstance.onerror = (error) => {
+        log.error('Error:', error);
+        // Could show error state in UI if needed
+      };
+
+      // Handle theme and viewport changes
       appInstance.onhostcontextchanged = (context) => {
         if (context.theme === 'dark') {
           document.documentElement.classList.add('dark');
         } else {
           document.documentElement.classList.remove('dark');
         }
+
+        // Handle viewport changes (optional)
+        if (context.viewport) {
+          log.info('Viewport:', context.viewport);
+          // Could adjust layout for different viewport sizes
+        }
       };
 
       // Handle teardown
       appInstance.onteardown = async (params) => {
-        console.log('[Quiz] Teardown:', params.reason);
+        log.info('Teardown requested:', params);
+        // Could save partial quiz state here if needed
+        return {};
       };
+
+      // Handle tool cancellation
+      appInstance.setNotificationHandler(
+        McpUiToolCancelledNotificationSchema,
+        (notification) => {
+          log.info('Tool cancelled:', notification.params);
+          // Could show cancellation message if needed
+        }
+      );
     },
   });
 
   const currentQuestion = quizData.questions[quizData.currentQuestionIndex];
   const isLastQuestion = quizData.currentQuestionIndex === quizData.questions.length - 1;
+
+  // Run security self-test on component mount
+  useEffect(() => {
+    runSecuritySelfTest();
+  }, []);
 
   const handleAnswerClick = (answerIndex: number) => {
     if (showFeedback) return;

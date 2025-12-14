@@ -81,7 +81,7 @@ export const TOOL_METADATA = {
 
       part3_useCase: "Use this when the user wants to test their knowledge with a quick, interactive quiz.",
 
-      part4_constraints: "Note: Each quiz session costs 5 tokens. The widget manages state internally and automatically sends completion messages to the host when finished."
+      part4_constraints: "The widget manages state internally and automatically sends completion messages to the host when finished. Each quiz session creates a new instance with randomized question order."
     },
 
     cost: {

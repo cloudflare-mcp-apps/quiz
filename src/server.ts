@@ -1,18 +1,17 @@
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { RESOURCE_URI_META_KEY } from "@modelcontextprotocol/ext-apps";
 import type { Env } from "./types";
 import type { Props } from "./auth/props";
 import { loadHtml } from "./helpers/assets.js";
 import { UI_RESOURCES, UI_MIME_TYPE } from "./resources/ui-resources.js";
 import { SERVER_INSTRUCTIONS } from './server-instructions.js';
 import { executeStartQuiz } from "./tools";
-import { TOOL_METADATA, getToolDescription } from "./tools/descriptions";
+import { TOOL_METADATA, getToolDescription } from "./tool-descriptions";
 import { StartQuizInput } from "./schemas/inputs";
 import { StartQuizOutputSchema } from "./schemas/outputs";
 import { logger } from "./shared/logger";
 import { SERVER_CONFIG } from "./shared/constants";
-
-const RESOURCE_URI_META_KEY = "ui/resourceUri";
 
 /**
  * Quiz MCP - General Knowledge Quiz Widget

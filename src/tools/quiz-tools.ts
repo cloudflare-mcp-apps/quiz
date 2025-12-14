@@ -13,7 +13,7 @@
 import type { Env } from "../types";
 import { executeToolWithTokenConsumption } from "../shared/tool-executor";
 import { UI_RESOURCES } from "../resources/ui-resources";
-import { getToolCost } from "./descriptions";
+import { getToolCost } from "../tool-descriptions";
 
 /**
  * Execute start_quiz tool
