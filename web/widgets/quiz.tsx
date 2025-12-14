@@ -106,12 +106,12 @@ function QuizWidget() {
         <img
           src={backgroundImage}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-50 dark:opacity-40"
+          className="absolute inset-0 w-full h-full object-cover opacity-70 dark:opacity-60"
           aria-hidden="true"
         />
 
         {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white/50 dark:from-slate-900/70 dark:to-slate-900/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-white/30 dark:from-slate-900/50 dark:to-slate-900/30" />
 
         {/* Content (z-index to appear above background) */}
         <div className="relative z-10 flex flex-col items-center">
@@ -140,12 +140,12 @@ function QuizWidget() {
         <img
           src={backgroundImage}
           alt=""
-          className="absolute inset-0 w-full h-full object-cover opacity-50 dark:opacity-40"
+          className="absolute inset-0 w-full h-full object-cover opacity-70 dark:opacity-60"
           aria-hidden="true"
         />
 
         {/* Gradient overlay for better text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-white/70 to-white/50 dark:from-slate-900/70 dark:to-slate-900/50" />
+        <div className="absolute inset-0 bg-gradient-to-b from-white/50 to-white/30 dark:from-slate-900/50 dark:to-slate-900/30" />
 
         {/* Content */}
         <div className="relative z-10 flex flex-col items-center">
