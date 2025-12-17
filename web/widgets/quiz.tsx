@@ -116,7 +116,7 @@ function QuizWidget() {
         setState('FINISHED');
         const finalScore = isCorrect ? quizData.score + 1 : quizData.score;
 
-        app?.sendMessage({
+        app?.message({
           role: 'user',
           content: [{
             type: 'text',

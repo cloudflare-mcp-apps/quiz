@@ -114,22 +114,31 @@ export async function generateApiKey(
 }
 
 /**
- * Validate an API key and return user_id if valid
+ * API key validation result
+ */
+export interface ApiKeyValidationResult {
+  userId: string;
+  email: string;
+}
+
+/**
+ * Validate an API key and return user info if valid
  *
  * @param env - Cloudflare Workers environment
  * @param apiKey - Plaintext API key from Authorization header
- * @returns user_id if valid, null if invalid/expired/revoked
+ * @returns User info if valid, null if invalid/expired/revoked
  *
  * @example
- * const userId = await validateApiKey(env, 'wtyk_...');
- * if (!userId) {
+ * const result = await validateApiKey('wtyk_...', env);
+ * if (!result) {
  *   return new Response('Invalid API key', { status: 401 });
  * }
+ * const { userId, email } = result;
  */
 export async function validateApiKey(
   apiKey: string,
   env: ApiKeyEnv
-): Promise<string | null> {
+): Promise<ApiKeyValidationResult | null> {
   // Validate format
   if (!apiKey.startsWith('wtyk_') || apiKey.length !== 69) {
     console.log('⚠️ [API Keys] Invalid format');
@@ -168,10 +177,10 @@ export async function validateApiKey(
     return null;
   }
 
-  // Verify user still exists and is not deleted
+  // Verify user still exists and is not deleted, and get email
   const user = await env.TOKEN_DB.prepare(`
-    SELECT is_deleted FROM users WHERE user_id = ?
-  `).bind(keyRecord.user_id).first<{ is_deleted: number }>();
+    SELECT email, is_deleted FROM users WHERE user_id = ?
+  `).bind(keyRecord.user_id).first<{ email: string; is_deleted: number }>();
 
   if (!user || user.is_deleted === 1) {
     console.log('⚠️ [API Keys] User not found or deleted:', keyRecord.user_id);
@@ -197,7 +206,7 @@ export async function validateApiKey(
   }
 
   console.log(`✅ [API Keys] Valid key for user ${keyRecord.user_id}`);
-  return keyRecord.user_id;
+  return { userId: keyRecord.user_id, email: user.email };
 }
 
 /**

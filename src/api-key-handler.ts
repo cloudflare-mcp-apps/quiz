@@ -20,7 +20,6 @@
  */
 
 import { validateApiKey } from "./auth/apiKeys";
-import { getUserById } from "./shared/tokenUtils";
 import type { Env, ResponseFormat } from "./types";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { RESOURCE_URI_META_KEY } from "@modelcontextprotocol/ext-apps";
@@ -193,35 +192,27 @@ export async function handleApiKeyRequest(
       return jsonError("Missing Authorization header", 401);
     }
 
-    // 2. Validate API key and get user_id
-    const userId = await validateApiKey(apiKey, env);
+    // 2. Validate API key and get user info
+    const validationResult = await validateApiKey(apiKey, env);
 
-    if (!userId) {
+    if (!validationResult) {
       console.log("❌ [API Key Auth] Invalid or expired API key");
       return jsonError("Invalid or expired API key", 401);
     }
 
-    // 3. Get user from database
-    const dbUser = await getUserById(env.TOKEN_DB, userId);
+    // FREE server - no token balance check needed
+    const { userId, email } = validationResult;
 
-    if (!dbUser) {
-      // getUserById already checks is_deleted, so null means not found OR deleted
-      console.log(`❌ [API Key Auth] User not found or deleted: ${userId}`);
-      return jsonError("User not found or account deleted", 404);
-    }
+    console.log(`✅ [API Key Auth] Authenticated user: ${email} (${userId})`);
 
-    console.log(
-      `✅ [API Key Auth] Authenticated user: ${dbUser.email} (${userId}), balance: ${dbUser.current_token_balance} tokens`
-    );
+    // 3. Create or get cached MCP server with tools
+    const server = await getOrCreateServer(env, userId, email);
 
-    // 4. Create or get cached MCP server with tools
-    const server = await getOrCreateServer(env, userId, dbUser.email);
-
-    // 5. Handle the MCP request using the appropriate transport
+    // 4. Handle the MCP request using the appropriate transport
     if (pathname === "/sse") {
       return await handleSSETransport(server, request);
     } else if (pathname === "/mcp") {
-      return await handleHTTPTransport(server, request, env, userId, dbUser.email);
+      return await handleHTTPTransport(server, request, env, userId, email);
     } else {
       return jsonError("Invalid endpoint. Use /sse or /mcp", 400);
     }

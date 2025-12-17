@@ -6,10 +6,7 @@
  *
  * Pattern: Purpose → Returns → Use Case → Constraints
  *
- * Security Notes:
- * - NO API/service names in descriptions (only functional capabilities)
- * - NO token costs in descriptions (kept separate in metadata)
- * - NO implementation details
+ * FREE MCP Server - No token costs.
  *
  * @module tools/descriptions
  */
@@ -36,18 +33,6 @@ export interface ToolMetadata {
     part4_constraints: string;
   };
 
-  /** Token economics (NOT exposed in tool descriptions) */
-  cost: {
-    /** Cost in wtyczki.ai tokens */
-    tokens: number;
-
-    /** Why this cost? (e.g., "Interactive widget session") */
-    rationale: string;
-
-    /** Optional: What factors affect cost */
-    costFactors?: string[];
-  };
-
   /** Use case examples for documentation and testing */
   examples: {
     /** Short scenario name */
@@ -61,15 +46,15 @@ export interface ToolMetadata {
 /**
  * Tool metadata registry for Quiz MCP
  *
- * Contains complete metadata for all tools including descriptions,
- * cost information, and use case examples.
+ * Contains complete metadata for all tools including descriptions
+ * and use case examples. All tools are FREE.
  */
 export const TOOL_METADATA = {
   /**
    * Tool: Start Quiz
    *
    * Interactive general knowledge quiz widget with 8 questions.
-   * Medium-cost operation (5 tokens) for educational entertainment.
+   * FREE tool.
    */
   start_quiz: {
     title: "Start General Knowledge Quiz",
@@ -82,12 +67,6 @@ export const TOOL_METADATA = {
       part3_useCase: "Use this when the user wants to test their knowledge with a quick, interactive quiz.",
 
       part4_constraints: "The widget manages state internally and automatically sends completion messages to the host when finished. Each quiz session creates a new instance with randomized question order."
-    },
-
-    cost: {
-      tokens: 5,
-      rationale: "Interactive widget session with 8 questions and scoring logic",
-      costFactors: undefined // Fixed cost, no variable factors
     },
 
     examples: [
@@ -132,43 +111,6 @@ export function getToolDescription(toolName: ToolName): string {
   const { part1_purpose, part2_returns, part3_useCase, part4_constraints } = meta.description;
 
   return `${part1_purpose} ${part2_returns} ${part3_useCase} ${part4_constraints}`;
-}
-
-/**
- * Get token cost for a tool
- *
- * Retrieves the token cost from metadata. This should be used instead of
- * hardcoding TOOL_COST constants throughout the codebase.
- *
- * @param toolName - Name of the tool (type-safe)
- * @returns Token cost for this tool
- *
- * @example
- * ```typescript
- * const cost = getToolCost("start_quiz"); // Returns: 5
- * ```
- */
-export function getToolCost(toolName: ToolName): number {
-  return TOOL_METADATA[toolName].cost.tokens;
-}
-
-/**
- * Get cost rationale for a tool
- *
- * Retrieves the explanation for why a tool costs what it costs.
- * Useful for documentation and debugging.
- *
- * @param toolName - Name of the tool (type-safe)
- * @returns Cost rationale string
- *
- * @example
- * ```typescript
- * const rationale = getToolCostRationale("start_quiz");
- * // Returns: "Interactive widget session with 8 questions and scoring logic"
- * ```
- */
-export function getToolCostRationale(toolName: ToolName): string {
-  return TOOL_METADATA[toolName].cost.rationale;
 }
 
 /**

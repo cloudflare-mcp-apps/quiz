@@ -19,8 +19,8 @@
   },
   "dependencies": {
     "@cloudflare/workers-oauth-provider": "^0.1.0",
-    "@modelcontextprotocol/ext-apps": "git+https://github.com/modelcontextprotocol/ext-apps.git",
-    "@modelcontextprotocol/sdk": "^1.24.0",
+    "@modelcontextprotocol/ext-apps": "^0.2.0",
+    "@modelcontextprotocol/sdk": "^1.25.1",
     "@workos-inc/node": "^7.73.0",
     "agents": "^0.2.14",
     "body-parser": ">=2.2.1",
