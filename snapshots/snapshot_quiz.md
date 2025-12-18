@@ -377,13 +377,11 @@ this.server.registerResource(
 - **Use cases**: N/A
 - **Integration**: ❌ Not configured
 
-### AI Gateway (Shared)
-- **Status**: ✅ Configured
-- **Gateway ID**: mcp-production-gateway (shared across all MCP servers)
-- **Environment Variable**: AI_GATEWAY_ID
-- **Cache Policy**: Not used (no AI requests)
-- **Rate Limiting**: Not used (no AI requests)
-- **Purpose**: Reserved for future features
+### AI Gateway
+- **Status**: ❌ Not configured
+- **Gateway ID**: N/A
+- **Environment Variable**: N/A
+- **Purpose**: N/A (Quiz is a pure widget server with no AI features)
 
 ### Workflows (Cloudflare)
 - **Binding**: N/A
@@ -398,7 +396,7 @@ this.server.registerResource(
 2. **WORKOS_API_KEY**: ✅ Set - WorkOS API key for user validation
 
 **Optional (Server-Specific)**:
-3. **AI_GATEWAY_TOKEN**: ✅ Set - Reserved for future AI features
+3. None (Quiz is a pure widget server with no external API dependencies)
 
 ---
 
