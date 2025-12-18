@@ -21,10 +21,9 @@ export { Quiz };
  * 2. API Key Authentication - For non-OAuth clients
  *    - Flow: Client sends Authorization: Bearer wtyk_XXX → Validate → Tools
  *    - Used by: AnythingLLM, Cursor IDE, custom scripts
- *    - Endpoints: /sse, /mcp (with wtyk_ API key in header)
+ *    - Endpoints: /mcp (with wtyk_ API key in header)
  *
  * MCP Endpoints (support both auth methods):
- * - /sse - Server-Sent Events transport (for AnythingLLM, Claude Desktop)
  * - /mcp - Streamable HTTP transport (for ChatGPT and modern clients)
  *
  * OAuth Endpoints (OAuth only):
@@ -42,11 +41,8 @@ export { Quiz };
 
 // Create OAuthProvider instance (used when OAuth authentication is needed)
 const oauthProvider = new OAuthProvider({
-    // Dual transport support (SSE + Streamable HTTP)
-    // This ensures compatibility with all MCP clients (Claude, ChatGPT, etc.)
     apiHandlers: {
-        '/sse': Quiz.serveSSE('/sse'),  // Legacy SSE transport
-        '/mcp': Quiz.serve('/mcp'),     // New Streamable HTTP transport
+        '/mcp': Quiz.serve('/mcp'),
     },
 
     // OAuth authentication handler (WorkOS AuthKit integration)
@@ -77,12 +73,12 @@ export default {
 
             // Check for API key authentication on MCP endpoints
             if (isApiKeyRequest(url.pathname, authHeader)) {
-                logger.info({ event: 'transport_request', transport: url.pathname === '/sse' ? 'sse' : 'http', method: 'api_key', user_email: '' });
+                logger.info({ event: 'transport_request', transport: 'http', method: 'api_key', user_email: '' });
                 return await handleApiKeyRequest(request, env, ctx, url.pathname);
             }
 
             // Otherwise, use OAuth flow
-            logger.info({ event: 'transport_request', transport: url.pathname === '/sse' ? 'sse' : 'http', method: 'oauth', user_email: '' });
+            logger.info({ event: 'transport_request', transport: 'http', method: 'oauth', user_email: '' });
             return await oauthProvider.fetch(request, env, ctx);
 
         } catch (error) {
@@ -105,7 +101,7 @@ export default {
  * Detect if request should use API key authentication
  *
  * Criteria:
- * 1. Must be an MCP endpoint (/sse or /mcp)
+ * 1. Must be an MCP endpoint (/mcp)
  * 2. Must have Authorization header with API key (starts with wtyk_)
  *
  * OAuth endpoints (/authorize, /callback, /token, /register) are NEVER intercepted.
@@ -115,8 +111,7 @@ export default {
  * @returns true if API key request, false otherwise
  */
 function isApiKeyRequest(pathname: string, authHeader: string | null): boolean {
-    // Only intercept MCP transport endpoints
-    if (pathname !== "/sse" && pathname !== "/mcp") {
+    if (pathname !== "/mcp") {
         return false;
     }
 

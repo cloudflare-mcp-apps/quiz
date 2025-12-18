@@ -26,7 +26,6 @@
     "body-parser": ">=2.2.1",
     "hono": "^4.10.3",
     "jose": "^6.1.0",
-    "pilpat-mcp-security": "^1.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zod": "^4.1.13"

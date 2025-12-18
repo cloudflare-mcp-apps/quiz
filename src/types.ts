@@ -40,18 +40,6 @@ export interface Env {
     USER_SESSIONS: KVNamespace;
 
     /**
-     * Cloudflare AI Gateway Configuration
-     *
-     * Route all AI requests through AI Gateway for:
-     * - Authenticated access control
-     * - Rate limiting (60 requests/hour per user)
-     * - Response caching (1-hour TTL)
-     * - Analytics and monitoring
-     */
-    AI_GATEWAY_ID: string;
-    AI_GATEWAY_TOKEN: string;
-
-    /**
      * Cloudflare Assets Binding for MCP Apps
      *
      * Used to serve built HTML widgets from web/dist/widgets directory.
