@@ -59,10 +59,12 @@
 ### 2.3 Tool Implementation (SDK 1.25+)
 - **MCP SDK Version**: @modelcontextprotocol/sdk ^1.25.1
 - **registerTool() API**: ✅ Used
+- **inputSchema**: ✅ Uses Zod .shape property (best practice)
 - **outputSchema (Zod)**: ✅ Defined for all tools
 - **structuredContent**: ✅ Returned
 - **isError Flag**: ✅ Implemented
 - **Tool Descriptions**: ✅ 4-part pattern (Purpose → Returns → Use Case → Constraints)
+- **Tool Naming**: ✅ kebab-case (start-quiz)
 
 ### 2.4 Tool Descriptions (4-Part Pattern)
 - **Part 1 (Purpose)**: ✅ "Starts [what]"
@@ -199,9 +201,9 @@ this.server.registerResource(
 
 ---
 
-#### Tool 1: start_quiz
+#### Tool 1: start-quiz
 
-**Technical Name**: `start_quiz`
+**Technical Name**: `start-quiz`
 
 **Display Title**: Start General Knowledge Quiz
 
@@ -216,9 +218,9 @@ this.server.registerResource(
 - **Fields**: message (confirmation text), widget_uri (ui://quiz/widget)
 
 **Dual Auth Parity**: ✅ Confirmed
-- OAuth Path: src/server.ts:69-82
-- API Key Path (Registration): src/api-key-handler.ts:280-298
-- API Key Path (Executor): src/api-key-handler.ts:690-700
+- OAuth Path: src/server.ts:77-104
+- API Key Path (Registration): src/api-key-handler.ts:310-328
+- API Key Path (Executor): src/tools/quiz-tools.ts (shared extractor)
 
 **Implementation Details**:
 - **External API**: None (pure widget server)
@@ -498,14 +500,15 @@ this.server.registerResource(
   "@cloudflare/workers-types": "^4.20250101.0",
   "@types/react": "^18.3.0",
   "@types/react-dom": "^18.3.0",
-  "@vitejs/plugin-react": "^4.3.4",
-  "autoprefixer": "^10.4.20",
+  "@vitejs/plugin-react": "^4.3.1",
+  "autoprefixer": "^10.4.19",
   "concurrently": "^9.2.1",
-  "postcss": "^8.4.49",
-  "tailwindcss": "^3.4.17",
+  "cross-env": "^7.0.3",
+  "postcss": "^8.4.38",
+  "tailwindcss": "^3.4.16",
   "typescript": "^5.9.2",
-  "vite": "^6.0.6",
-  "vite-plugin-singlefile": "^2.0.3",
+  "vite": "^6.0.5",
+  "vite-plugin-singlefile": "^2.0.2",
   "wrangler": "^4.40.1"
 }
 ```
@@ -533,6 +536,11 @@ this.server.registerResource(
 | Consistency Tests | ✅ | All infrastructure checks passed |
 | TypeScript Compilation | ✅ | No errors |
 | Prompts Implemented | ❌ | No prompts (not needed for quiz) |
+| Zod Schema Shape | ✅ | Uses .shape for inputSchema |
+| Tool Naming (kebab-case) | ✅ | start-quiz (not snake_case) |
+| Error Handling | ✅ | Returns structured error, not throwing |
+| Color-scheme Meta | ✅ | Supports light/dark themes |
+| Cross-env Build | ✅ | Windows-compatible build scripts |
 
 ---
 
@@ -771,10 +779,10 @@ web/dist/widgets/
     "dev": "wrangler dev",
     "dev:full": "concurrently \"npm run dev\" \"npm run watch:widgets\"",
     "deploy": "npm run build:widgets && wrangler deploy",
-    "build:widget:quiz": "INPUT=widgets/quiz.html vite build",
+    "build:widget:quiz": "cross-env INPUT=widgets/quiz.html vite build",
     "build:widgets": "npm run build:widget:quiz",
     "watch:widgets": "npm run dev:widget",
-    "dev:widget": "INPUT=widgets/quiz.html vite build --watch"
+    "dev:widget": "cross-env INPUT=widgets/quiz.html vite build --watch"
   }
 }
 ```
