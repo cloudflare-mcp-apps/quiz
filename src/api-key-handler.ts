@@ -307,13 +307,13 @@ async function getOrCreateServer(
   // LOCATION 1: TOOL REGISTRATION SECTION
   // ========================================================================
 
-  // Tool: start_quiz (5 tokens)
+  // Tool: start-quiz (FREE)
   server.registerTool(
-    "start_quiz",
+    "start-quiz",
     {
-      title: TOOL_METADATA.start_quiz.title,
-      description: getToolDescription("start_quiz"),
-      inputSchema: StartQuizInput,
+      title: TOOL_METADATA["start-quiz"].title,
+      description: getToolDescription("start-quiz"),
+      inputSchema: StartQuizInput.shape,
       outputSchema: StartQuizOutputSchema,
       annotations: {
         readOnlyHint: true,
@@ -495,7 +495,7 @@ async function handleToolsList(
   // ========================================================================
   const tools: any[] = [
     {
-      name: "start_quiz",
+      name: "start-quiz",
       description: "Starts the interactive general knowledge quiz widget with 8 questions across various topics. Returns an embedded UI where users answer questions and see their final score. The widget manages state internally and automatically sends a completion message to the host when finished. Use this when the user wants to test their knowledge with a quick, interactive quiz.",
       inputSchema: {
         type: "object",
@@ -554,7 +554,7 @@ async function handleToolsCall(
     // ========================================================================
 
     switch (toolName) {
-      case "start_quiz":
+      case "start-quiz":
         result = await executeStartQuiz(toolArgs, env, userId, userEmail);
         break;
 

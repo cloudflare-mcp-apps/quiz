@@ -75,11 +75,11 @@ export class Quiz extends McpAgent<Env, unknown, Props> {
         // Tool: start_quiz (5 tokens)
         // ========================================================================
         this.server.registerTool(
-            "start_quiz",
+            "start-quiz",
             {
-                title: TOOL_METADATA.start_quiz.title,
-                description: getToolDescription("start_quiz"),
-                inputSchema: StartQuizInput,
+                title: TOOL_METADATA["start-quiz"].title,
+                description: getToolDescription("start-quiz"),
+                inputSchema: StartQuizInput.shape,
                 outputSchema: StartQuizOutputSchema,
                 annotations: {
                     readOnlyHint: true,      // Safe operation (no state mutation)
@@ -92,12 +92,15 @@ export class Quiz extends McpAgent<Env, unknown, Props> {
             },
             async (params) => {
                 if (!this.props) {
-                    throw new Error('User not authenticated');
+                    return {
+                        content: [{
+                            type: "text" as const,
+                            text: JSON.stringify({ data: null, error: "User not authenticated" })
+                        }]
+                    };
                 }
                 return executeStartQuiz(params, this.env, this.props.userId, this.props.email);
             }
         );
-
-        logger.info({ event: 'server_started', auth_mode: 'oauth' });
     }
 }

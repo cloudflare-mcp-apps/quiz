@@ -34,7 +34,7 @@ export async function executeStartQuiz(
 ): Promise<{ content: any[]; structuredContent?: any; isError?: boolean }> {
   logger.info({
     event: "tool_completed",
-    tool: "start_quiz",
+    tool: "start-quiz",
     user_id: userId,
     user_email: userEmail,
     action_id: crypto.randomUUID(),

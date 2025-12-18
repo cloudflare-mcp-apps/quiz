@@ -56,7 +56,7 @@ export const TOOL_METADATA = {
    * Interactive general knowledge quiz widget with 8 questions.
    * FREE tool.
    */
-  start_quiz: {
+  "start-quiz": {
     title: "Start General Knowledge Quiz",
 
     description: {
@@ -102,7 +102,7 @@ export type ToolName = keyof typeof TOOL_METADATA;
  *
  * @example
  * ```typescript
- * const desc = getToolDescription("start_quiz");
+ * const desc = getToolDescription("start-quiz");
  * // Returns: "Starts an interactive general knowledge quiz widget..."
  * ```
  */
@@ -123,7 +123,7 @@ export function getToolDescription(toolName: ToolName): string {
  *
  * @example
  * ```typescript
- * const examples = getToolExamples("start_quiz");
+ * const examples = getToolExamples("start-quiz");
  * // Returns: [{ scenario: "Knowledge test", description: "User wants to test..." }, ...]
  * ```
  */
